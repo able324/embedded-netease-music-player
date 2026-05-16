@@ -10,3 +10,9 @@
 ```
 <iframe border="0" marginwidth="0" marginheight="0" src="https://dontpanic92.github.io/embedded-netease-music-player/embedded-netease-music-player.html?536622304" width="530" height="96" frameborder="no"></iframe>
 ```
+
+如需自动播放，请使用 `autoplay` 参数（注意：浏览器可能会阻止未经用户交互的自动播放）：
+
+```
+<iframe border="0" marginwidth="0" marginheight="0" src="https://dontpanic92.github.io/embedded-netease-music-player/embedded-netease-music-player.html?536622304&autoplay=1" width="530" height="96" frameborder="no"></iframe>
+```

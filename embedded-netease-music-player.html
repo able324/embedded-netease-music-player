@@ -143,9 +143,14 @@
 
             function retrieveSong(id) {
                 get(
-                    "https://nmapi.dontpanic.fun/song/url?id=" + id,
+                    "https://nmapi.dontpanic.fun/song/url?id=" + id + "&realIP=116.25.146.177",
                     (data) => {
-                        createPlayer(JSON.parse(data).data[0]);
+                        var song = JSON.parse(data).data[0];
+                        if (!song || !song.url) {
+                            console.warn("No playable URL returned for song id " + id + ". The track may be region-locked, VIP-only, or unavailable.");
+                            return;
+                        }
+                        createPlayer(song);
                     });
             }
 
@@ -173,6 +178,18 @@
 
                 var body = document.getElementsByTagName("body")[0];
                 body.appendChild(audioNode);
+
+                if (autoplay) {
+                    var playPromise = audioNode.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            playImgNode.style.display = "none";
+                            pauseImgNode.style.display = "inline";
+                        }).catch((err) => {
+                            console.warn("Autoplay was blocked by the browser:", err);
+                        });
+                    }
+                }
             }
 
             function setDetails(details) {
@@ -180,6 +197,10 @@
                 artistNode.innerHTML = " - " + details.ar[0].name;
                 if (details.alia[0]) {
                     aliasNode.innerHTML = "(" + details.alia[0] + ")";
+                }
+
+                if (details.tns[0]) {
+                    aliasNode.innerHTML = "(" + details.tns[0] + ")";
                 }
 
                 songPicNode.src = details.al.picUrl;
@@ -250,8 +271,29 @@
                 nmLinkNode.href = "http://music.163.com/song?id=" + id;
             }
 
-            var id = window.location.search.substring(1);
-            if (id != undefined && id != "") {
+            var autoplay = false;
+            var id = "";
+            var parts = window.location.search.substring(1).split("&");
+            for (var i = 0; i < parts.length; i++) {
+                if (parts[i] === "") {
+                    continue;
+                }
+                var eq = parts[i].indexOf("=");
+                if (eq === -1) {
+                    if (id === "") {
+                        id = decodeURIComponent(parts[i]);
+                    }
+                    continue;
+                }
+                var key = decodeURIComponent(parts[i].substring(0, eq));
+                var value = decodeURIComponent(parts[i].substring(eq + 1));
+                if (key === "id" && id === "") {
+                    id = value;
+                } else if (key === "autoplay") {
+                    autoplay = value === "1";
+                }
+            }
+            if (id != "") {
                 initialize(id);
             }
         </script>
